@@ -9,7 +9,7 @@ abstract class Carta(
     abstract fun mostrarInfo(): String
 
 
-    fun obterNome(): String {
-        return nome
-    }
+    open fun obterNome(): String = nome
+
+    open fun obterTipo(): String = "Carta Genérica"
 }

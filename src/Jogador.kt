@@ -1,13 +1,13 @@
 open class Jogador(private var nome: String) {
     protected var pontosdeVida = 10000 // Pontos iniciais de um jogador
     protected val mao = mutableListOf<Carta>() // Cartas do jogador
-    protected val tabuleiro = mutableListOf<CartaMonstro>() // Lista de monstros no tabuleiro
-    protected val tamMaxTabuleiro = 5 // Limite de monstros no tabuleiro
+    protected val tabuleiro = Tabuleiro() // Usando a nova classe Tabuleiro
 
-    // Mostrar cartas na mão
     fun mostrarMao() {
         println("Mão de $nome:")
-        mao.forEachIndexed { index, carta -> println("Carta $index: ${carta.obterNome()}") }
+        mao.forEachIndexed { index, carta ->
+            println("Carta $index: ${carta.obterNome()} - Tipo: ${carta.obterTipo()}")
+        }
     }
 
     // Adiciona uma carta à mão do jogador
@@ -21,19 +21,21 @@ open class Jogador(private var nome: String) {
 
     // Coloca um monstro da mão no tabuleiro
     fun colocarMonstroNoTabuleiro(indice: Int) {
-        if (tabuleiro.size < tamMaxTabuleiro && mao[indice] is CartaMonstro) {
+        if (mao[indice] is CartaMonstro) {
             val monstro = mao.removeAt(indice) as CartaMonstro
-            tabuleiro.add(monstro)
-            println("${monstro.obterNome()} foi colocado no tabuleiro.")
+            if (!tabuleiro.adicionarMonstro(monstro)) {
+                // Caso o monstro não seja adicionado (tabuleiro cheio)
+                mao.add(monstro) // Volta o monstro para a mão
+            }
         } else {
-            println("Não é possível adicionar mais monstros no tabuleiro.")
+            println("Carta selecionada não é um monstro.")
         }
     }
 
     // Equipar um monstro com uma carta de equipamento
     fun equiparMonstro(indiceMonstro: Int, indiceEquipamento: Int) {
-        if (indiceMonstro in 0 until tabuleiro.size && indiceEquipamento in 0 until mao.size && mao[indiceEquipamento] is CartaEquipamento) {
-            val monstro = tabuleiro[indiceMonstro]
+        if (indiceMonstro in 0 until tabuleiro.getMonstros().size && indiceEquipamento in 0 until mao.size && mao[indiceEquipamento] is CartaEquipamento) {
+            val monstro = tabuleiro.getMonstros()[indiceMonstro]
             val equipamento = mao.removeAt(indiceEquipamento) as CartaEquipamento
             monstro.equiparCarta(equipamento)
             println("${monstro.obterNome()} foi equipado com ${equipamento.obterNome()}.")
@@ -54,38 +56,37 @@ open class Jogador(private var nome: String) {
 
     // Realizar um ataque contra o oponente
     fun realizarAtaque(monstroAtacante: CartaMonstro, monstroOponente: CartaMonstro) {
-        val dano = monstroAtacante.poder() - monstroOponente.poder()
-        if (dano > 0) {
-            println("${monstroAtacante.obterNome()} causou $dano pontos de dano em ${monstroOponente.obterNome()}.")
-            monstroOponente.reduzirVida(dano)
-        } else {
-            println("${monstroOponente.obterNome()} se defendeu do ataque.")
-        }
+        tabuleiro.realizarAtaque(monstroAtacante, monstroOponente)
     }
 
     // Realizar um ataque de um monstro contra outro monstro do adversário
     fun atacarComMonstro(indiceAtacante: Int, indiceOponente: Int) {
-        if (indiceAtacante in 0 until tabuleiro.size && indiceOponente in 0 until tabuleiro.size) {
-            val monstroAtacante = tabuleiro[indiceAtacante]
-            val monstroOponente = tabuleiro[indiceOponente]
-            realizarAtaque(monstroAtacante, monstroOponente)
-        } else {
-            println("Índices inválidos para ataque.")
-        }
+        tabuleiro.atacarComMonstro(indiceAtacante, indiceOponente)
     }
 
     // Metodo para alterar o estado de um monstro (ataque/defesa)
     fun alterarEstadoMonstro(indice: Int) {
-        if (indice in 0 until tabuleiro.size) {
-            val monstro = tabuleiro[indice]
-            monstro.alterarEstado()
-            println("${monstro.obterNome()} agora está em estado ${monstro.modoAtaque()}")
-        } else {
-            println("Índice inválido para alterar o estado do monstro.")
+        tabuleiro.alterarEstadoMonstro(indice)
+    }
+
+    fun perderPontosDeVida(dano: Int) {
+        pontosdeVida = (pontosdeVida - dano).coerceAtLeast(0) // Garante que não fique negativo
+        println("$nome perdeu $dano pontos de vida! Pontos de vida restantes: $pontosdeVida")
+    }
+
+    // Retorna o nome do jogador
+    fun getNome(): String = nome
+
+    // Getter para os pontos de vida
+    fun getPontosVida(): Int = pontosdeVida
+
+    // Setter para os pontos de vida
+    fun setPontosVida(novoValor: Int) {
+        if (novoValor >= 0) {
+            pontosdeVida = novoValor
         }
     }
 
-    // Metodo para mostrar o menu e permitir que o jogador escolha a ação
     fun executarAcao() {
         println("\nEscolha uma ação durante sua rodada:")
         println("1 - Posicionar um novo monstro no tabuleiro")
@@ -104,15 +105,15 @@ open class Jogador(private var nome: String) {
             }
 
             2 -> {
-                if (tabuleiro.isNotEmpty()) {
+                if (tabuleiro.isVazio()) {
+                    println("Não há monstros no tabuleiro.")
+                } else {
                     mostrarMao()
                     println("Escolha o índice do monstro no tabuleiro:")
                     val indiceMonstro = readLine()?.toIntOrNull() ?: -1
                     println("Escolha o índice da carta de equipamento:")
                     val indiceEquipamento = readLine()?.toIntOrNull() ?: -1
                     equiparMonstro(indiceMonstro, indiceEquipamento)
-                } else {
-                    println("Não há monstros no tabuleiro.")
                 }
             }
 
@@ -124,24 +125,24 @@ open class Jogador(private var nome: String) {
             }
 
             4 -> {
-                if (tabuleiro.size < 2) {
-                    println("Não há monstros suficientes para atacar.")
-                    return
+                if (tabuleiro.isVazio()) {
+                    println("Não há monstros no tabuleiro para atacar.")
+                } else {
+                    println("Escolha o índice do monstro atacante:")
+                    val indiceAtacante = readLine()?.toIntOrNull() ?: -1
+                    println("Escolha o índice do monstro oponente:")
+                    val indiceOponente = readLine()?.toIntOrNull() ?: -1
+                    atacarComMonstro(indiceAtacante, indiceOponente)
                 }
-                println("Escolha o índice do monstro atacante:")
-                val indiceAtacante = readLine()?.toIntOrNull() ?: -1
-                println("Escolha o índice do monstro oponente:")
-                val indiceOponente = readLine()?.toIntOrNull() ?: -1
-                atacarComMonstro(indiceAtacante, indiceOponente)
             }
 
             5 -> {
-                if (tabuleiro.isNotEmpty()) {
+                if (tabuleiro.isVazio()) {
+                    println("Não há monstros no tabuleiro.")
+                } else {
                     println("Escolha o índice do monstro para alterar o estado:")
                     val indice = readLine()?.toIntOrNull() ?: -1
                     alterarEstadoMonstro(indice)
-                } else {
-                    println("Não há monstros no tabuleiro.")
                 }
             }
 
@@ -150,42 +151,8 @@ open class Jogador(private var nome: String) {
         }
     }
 
-    // Retorna o nome do jogador
-    fun getNome(): String = nome
-
-    // Getter para os pontos de vida
-    fun getPontosVida(): Int = pontosdeVida
-
-    // Setter para os pontos de vida
-    fun setPontosVida(novoValor: Int) {
-        if (novoValor >= 0) {
-            pontosdeVida = novoValor
-        } else {
-            pontosdeVida = 0 // Impede que pontos de vida sejam negativos
-        }
-    }
 
 
-    // Verifica se o jogador ainda tem monstros no tabuleiro
-    fun temMonstrosNoTabuleiro(): Boolean {
-        return tabuleiro.isNotEmpty()
-    }
 
-    // Retorna os monstros do jogador
-    fun getMonstrosNoTabuleiro(): List<CartaMonstro> {
-        return tabuleiro
-    }
 
-    // Ganho de pontos de vida do monstro
-    fun ganharPontosDeVida(pontos: Int) {
-        pontosdeVida += pontos
-        println("$nome ganhou $pontos pontos de vida. Pontos atuais: $pontosdeVida")
-    }
-
-    // Perca de pontos de vida do monstro
-    fun perderPontosDeVida(pontos: Int) {
-        pontosdeVida -= pontos
-        if (pontosdeVida < 0) pontosdeVida = 0 // Impede que os pontos de vida fiquem negativos
-        println("$nome perdeu $pontos pontos de vida. Pontos atuais: $pontosdeVida")
-    }
 }

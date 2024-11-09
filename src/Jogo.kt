@@ -16,6 +16,8 @@ class Jogo(val jogador1: Jogador, val jogador2: Jogador, val baralho: MutableLis
         }
         verificarVencedor()
     }
+
+    // Distribuir as cartas iniciais
     private fun distribuirCartasIniciais(jogador: Jogador) {
         repeat(5) {
             if (baralho.isNotEmpty()) {
@@ -30,17 +32,18 @@ class Jogo(val jogador1: Jogador, val jogador2: Jogador, val baralho: MutableLis
     private fun turnoDoJogador(jogador: Jogador) {
         println("Turno de ${jogador.getNome()}")
         jogador.executarAcao()
+        // Atualizando a vida de ambos os jogadores após cada turno
         println("${jogador1.getNome()} - Vida: ${jogador1.getPontosVida()}")
         println("${jogador2.getNome()} - Vida: ${jogador2.getPontosVida()}")
     }
 
     private fun atacarJogador(atacante: Jogador, defensor: Jogador) {
-        val dano = 10 // Pode ajustar com base em cartas ou habilidades
+        val dano = 10 // Ajuste de dano conforme necessidade (pode depender das cartas ou monstros)
         println("${atacante.getNome()} ataca ${defensor.getNome()} causando $dano de dano!")
         defensor.perderPontosDeVida(dano)
     }
 
-    // Verificar o vencedor
+    // Verificar vencedor após o fim do jogo
     private fun verificarVencedor() {
         when {
             jogador1.getPontosVida() <= 0 -> println("${jogador2.getNome()} venceu!")

@@ -43,11 +43,11 @@ fun carregarCartasArquivo(arquivo: String): MutableList<Carta> {
                 println("Valor de defesa inválido na linha ${index + 1}: $linha")
                 return@forEachIndexed
             }
-            val tipo = dados[4].trim()
+            val tipo = dados[4].trim().lowercase()
 
-            val carta = when (tipo.lowercase()) {
+            val carta = when (tipo) {
                 "equipamento" -> CartaEquipamento(nome, descricao, ataque, defesa)
-                "monstro" -> CartaMonstro(nome, descricao, ataque, defesa, vida = 10000 )
+                "monstro" -> CartaMonstro(nome, descricao, ataque, defesa, tipo)
                 else -> {
                     println("Tipo de carta desconhecido na linha ${index + 1}: $tipo")
                     null
