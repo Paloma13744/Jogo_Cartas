@@ -10,11 +10,11 @@ fun main() {
         println("Erro: Baralho possui menos de 10 cartas. Verifique o arquivo de cartas.")
         return
     }
+    val jogo = Jogo(baralho)
 
-    val jogador1 = Jogador("Jogador 1")
-    val jogador2 = Jogador("Jogador 2")
-    val jogo = Jogo(jogador1, jogador2, baralho)
-    jogo.iniciar()
+    // Iniciando o jogo
+    jogo.iniciarJogo()
+
 }
 
 fun carregarCartasArquivo(arquivo: String): MutableList<Carta> {
@@ -47,7 +47,7 @@ fun carregarCartasArquivo(arquivo: String): MutableList<Carta> {
 
             val carta = when (tipo) {
                 "equipamento" -> CartaEquipamento(nome, descricao, ataque, defesa)
-                "monstro" -> CartaMonstro(nome, descricao, ataque, defesa, tipo)
+                "monstro" -> CartaMonstro(nome, descricao, ataque, defesa)
                 else -> {
                     println("Tipo de carta desconhecido na linha ${index + 1}: $tipo")
                     null

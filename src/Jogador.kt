@@ -1,158 +1,155 @@
-open class Jogador(private var nome: String) {
-    protected var pontosdeVida = 10000 // Pontos iniciais de um jogador
-    protected val mao = mutableListOf<Carta>() // Cartas do jogador
-    protected val tabuleiro = Tabuleiro() // Usando a nova classe Tabuleiro
+class Jogador(val nome: String) {
+    val mao = mutableListOf<Carta>()
+    var pontosDeVida = 1000
+    val tabuleiro = mutableListOf<CartaMonstro>()
 
-    fun mostrarMao() {
-        println("Mão de $nome:")
-        mao.forEachIndexed { index, carta ->
-            println("Carta $index: ${carta.obterNome()} - Tipo: ${carta.obterTipo()}")
-        }
+    fun receberCarta(carta: Carta) {
+        mao.add(carta)
+        println("$nome recebeu a carta: ${carta.nome}")
     }
 
-    // Adiciona uma carta à mão do jogador
-    fun adicionarCarta(carta: Carta) {
-        if (mao.size < 10) {
-            mao.add(carta)
+    fun descartarCarta(carta: Carta) {
+        mao.remove(carta)
+        println("$nome descartou a carta: ${carta.nome}")
+    }
+
+    fun posicionarMonstro(cartaMonstro: CartaMonstro) {
+        if (tabuleiro.size < 5) {
+            tabuleiro.add(cartaMonstro)
+            mao.remove(cartaMonstro)
+            println("$nome posicionou o monstro ${cartaMonstro.nome} no tabuleiro.")
         } else {
-            println("Mão está cheia, não é possível adicionar mais cartas.")
+            println("O tabuleiro está cheio! Não é possível posicionar mais monstros.")
         }
     }
 
-    // Coloca um monstro da mão no tabuleiro
-    fun colocarMonstroNoTabuleiro(indice: Int) {
-        if (mao[indice] is CartaMonstro) {
-            val monstro = mao.removeAt(indice) as CartaMonstro
-            if (!tabuleiro.adicionarMonstro(monstro)) {
-                // Caso o monstro não seja adicionado (tabuleiro cheio)
-                mao.add(monstro) // Volta o monstro para a mão
+    fun equiparMonstro(monstro: CartaMonstro, equipamento: CartaEquipamento) {
+        // Equipamento pode ser implementado para aumentar as estatísticas do monstro
+        println("$nome equipou ${monstro.nome} com ${equipamento.nome}")
+    }
+
+    fun resetarAtaques() {
+        // Resetar os ataques dos monstros
+        tabuleiro.forEach { it.estado = MonstroState.DEFESA }
+    }
+
+    fun escolherAcao(jogo: Jogo) {
+        println("\nEscolha uma ação:")
+        println("1) Posicionar um novo monstro no tabuleiro")
+        println("2) Equipar um monstro com uma carta de equipamento")
+        println("3) Descartar uma carta da mão")
+        println("4) Realizar um ataque contra o oponente")
+        println("5) Alterar o estado de um monstro (ataque/defesa)")
+        println("6) Sair")
+
+        val opcao = readLine()?.toIntOrNull()
+
+        when (opcao) {
+            1 -> posicionarMonstroAtravésDeEscolha()
+            2 -> equiparMonstroAtravésDeEscolha()
+            3 -> descartarCartaAtravésDeEscolha()
+            4 -> realizarAtaque()
+            5 -> alterarEstadoMonstro()
+            6 -> println("Saindo da rodada.")
+            else -> println("Opção inválida!")
+        }
+    }
+
+    private fun posicionarMonstroAtravésDeEscolha() {
+        val monstros = mao.filterIsInstance<CartaMonstro>()
+        if (monstros.isNotEmpty()) {
+            println("Escolha um monstro da sua mão para posicionar:")
+            monstros.forEachIndexed { index, carta -> println("${index + 1}) ${carta.nome}") }
+            val escolha = readLine()?.toIntOrNull()
+            val monstroEscolhido = monstros.getOrNull(escolha?.minus(1) ?: -1)
+            if (monstroEscolhido != null) {
+                posicionarMonstro(monstroEscolhido)
+            } else {
+                println("Opção inválida ou monstro não encontrado.")
             }
         } else {
-            println("Carta selecionada não é um monstro.")
+            println("Você não tem monstros na sua mão!")
         }
     }
 
-    // Equipar um monstro com uma carta de equipamento
-    fun equiparMonstro(indiceMonstro: Int, indiceEquipamento: Int) {
-        if (indiceMonstro in 0 until tabuleiro.getMonstros().size && indiceEquipamento in 0 until mao.size && mao[indiceEquipamento] is CartaEquipamento) {
-            val monstro = tabuleiro.getMonstros()[indiceMonstro]
-            val equipamento = mao.removeAt(indiceEquipamento) as CartaEquipamento
-            monstro.equiparCarta(equipamento)
-            println("${monstro.obterNome()} foi equipado com ${equipamento.obterNome()}.")
-        } else {
-            println("Equipamento ou monstro inválidos.")
-        }
-    }
+    private fun equiparMonstroAtravésDeEscolha() {
+        val monstros = tabuleiro.filterIsInstance<CartaMonstro>()
+        val equipamentos = mao.filterIsInstance<CartaEquipamento>()
+        if (monstros.isNotEmpty() && equipamentos.isNotEmpty()) {
+            println("Escolha um monstro para equipar:")
+            monstros.forEachIndexed { index, carta -> println("${index + 1}) ${carta.nome}") }
+            val escolhaMonstro = readLine()?.toIntOrNull()
+            val monstroEscolhido = monstros.getOrNull(escolhaMonstro?.minus(1) ?: -1)
 
-    // Descartar uma carta da mão
-    fun descartarCarta(indice: Int) {
-        if (indice in 0 until mao.size) {
-            val cartaDescartada = mao.removeAt(indice)
-            println("${cartaDescartada.obterNome()} foi descartada.")
-        } else {
-            println("Índice inválido para descartar carta.")
-        }
-    }
+            if (monstroEscolhido != null) {
+                println("Escolha um equipamento para equipar:")
+                equipamentos.forEachIndexed { index, carta -> println("${index + 1}) ${carta.nome}") }
+                val escolhaEquipamento = readLine()?.toIntOrNull()
+                val equipamentoEscolhido = equipamentos.getOrNull(escolhaEquipamento?.minus(1) ?: -1)
 
-    // Realizar um ataque contra o oponente
-    fun realizarAtaque(monstroAtacante: CartaMonstro, monstroOponente: CartaMonstro) {
-        tabuleiro.realizarAtaque(monstroAtacante, monstroOponente)
-    }
-
-    // Realizar um ataque de um monstro contra outro monstro do adversário
-    fun atacarComMonstro(indiceAtacante: Int, indiceOponente: Int) {
-        tabuleiro.atacarComMonstro(indiceAtacante, indiceOponente)
-    }
-
-    // Metodo para alterar o estado de um monstro (ataque/defesa)
-    fun alterarEstadoMonstro(indice: Int) {
-        tabuleiro.alterarEstadoMonstro(indice)
-    }
-
-    fun perderPontosDeVida(dano: Int) {
-        pontosdeVida = (pontosdeVida - dano).coerceAtLeast(0) // Garante que não fique negativo
-        println("$nome perdeu $dano pontos de vida! Pontos de vida restantes: $pontosdeVida")
-    }
-
-    // Retorna o nome do jogador
-    fun getNome(): String = nome
-
-    // Getter para os pontos de vida
-    fun getPontosVida(): Int = pontosdeVida
-
-    // Setter para os pontos de vida
-    fun setPontosVida(novoValor: Int) {
-        if (novoValor >= 0) {
-            pontosdeVida = novoValor
-        }
-    }
-
-    fun executarAcao() {
-        println("\nEscolha uma ação durante sua rodada:")
-        println("1 - Posicionar um novo monstro no tabuleiro")
-        println("2 - Equipar um monstro com uma carta de equipamento")
-        println("3 - Descartar uma carta da mão")
-        println("4 - Realizar um ataque contra o oponente")
-        println("5 - Alterar o estado de um monstro (ataque/defesa)")
-        println("6 - Sair")
-
-        when (readLine()?.toIntOrNull()) {
-            1 -> {
-                mostrarMao()
-                println("Escolha o índice da carta para colocar no tabuleiro:")
-                val indice = readLine()?.toIntOrNull() ?: -1
-                colocarMonstroNoTabuleiro(indice)
-            }
-
-            2 -> {
-                if (tabuleiro.isVazio()) {
-                    println("Não há monstros no tabuleiro.")
+                if (equipamentoEscolhido != null) {
+                    equiparMonstro(monstroEscolhido, equipamentoEscolhido)
                 } else {
-                    mostrarMao()
-                    println("Escolha o índice do monstro no tabuleiro:")
-                    val indiceMonstro = readLine()?.toIntOrNull() ?: -1
-                    println("Escolha o índice da carta de equipamento:")
-                    val indiceEquipamento = readLine()?.toIntOrNull() ?: -1
-                    equiparMonstro(indiceMonstro, indiceEquipamento)
+                    println("Equipamento inválido.")
                 }
+            } else {
+                println("Monstro inválido.")
             }
-
-            3 -> {
-                mostrarMao()
-                println("Escolha o índice da carta para descartar:")
-                val indice = readLine()?.toIntOrNull() ?: -1
-                descartarCarta(indice)
-            }
-
-            4 -> {
-                if (tabuleiro.isVazio()) {
-                    println("Não há monstros no tabuleiro para atacar.")
-                } else {
-                    println("Escolha o índice do monstro atacante:")
-                    val indiceAtacante = readLine()?.toIntOrNull() ?: -1
-                    println("Escolha o índice do monstro oponente:")
-                    val indiceOponente = readLine()?.toIntOrNull() ?: -1
-                    atacarComMonstro(indiceAtacante, indiceOponente)
-                }
-            }
-
-            5 -> {
-                if (tabuleiro.isVazio()) {
-                    println("Não há monstros no tabuleiro.")
-                } else {
-                    println("Escolha o índice do monstro para alterar o estado:")
-                    val indice = readLine()?.toIntOrNull() ?: -1
-                    alterarEstadoMonstro(indice)
-                }
-            }
-
-            6 -> println("Saindo do menu.")
-            else -> println("Opção inválida.")
+        } else {
+            println("Você não tem monstros ou equipamentos disponíveis!")
         }
     }
 
+    private fun descartarCartaAtravésDeEscolha() {
+        if (mao.isNotEmpty()) {
+            println("Escolha uma carta para descartar:")
+            mao.forEachIndexed { index, carta -> println("${index + 1}) ${carta.nome}") }
+            val escolha = readLine()?.toIntOrNull()
+            val cartaEscolhida = mao.getOrNull(escolha?.minus(1) ?: -1)
+            if (cartaEscolhida != null) {
+                descartarCarta(cartaEscolhida)
+            } else {
+                println("Opção inválida.")
+            }
+        } else {
+            println("Você não tem cartas na mão!")
+        }
+    }
 
+    private fun realizarAtaque() {
+        val monstros = tabuleiro.filterIsInstance<CartaMonstro>()
+        if (monstros.isNotEmpty()) {
+            println("Escolha um monstro para atacar:")
+            monstros.forEachIndexed { index, carta -> println("${index + 1}) ${carta.nome}") }
+            val escolha = readLine()?.toIntOrNull()
+            val monstroEscolhido = monstros.getOrNull(escolha?.minus(1) ?: -1)
 
+            if (monstroEscolhido != null) {
+                // Lógica para atacar o oponente, por exemplo, atacar o monstro adversário
+                println("$nome está atacando com ${monstroEscolhido.nome}!")
+            } else {
+                println("Monstro inválido para atacar.")
+            }
+        } else {
+            println("Você não tem monstros para atacar!")
+        }
+    }
 
+    private fun alterarEstadoMonstro() {
+        val monstros = tabuleiro.filterIsInstance<CartaMonstro>()
+        if (monstros.isNotEmpty()) {
+            println("Escolha um monstro para alterar o estado:")
+            monstros.forEachIndexed { index, carta -> println("${index + 1}) ${carta.nome}") }
+            val escolha = readLine()?.toIntOrNull()
+            val monstroEscolhido = monstros.getOrNull(escolha?.minus(1) ?: -1)
 
+            if (monstroEscolhido != null) {
+                monstroEscolhido.alternarEstado()
+            } else {
+                println("Monstro inválido para alterar estado.")
+            }
+        } else {
+            println("Você não tem monstros para alterar o estado!")
+        }
+    }
 }
