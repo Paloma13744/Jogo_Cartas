@@ -1,4 +1,4 @@
-// Enumeração para o estado do monstro
+
 enum class MonstroState {
     ATAQUE, DEFESA
 }

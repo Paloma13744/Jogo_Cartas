@@ -21,7 +21,7 @@ fun carregarCartasArquivo(arquivo: String): MutableList<Carta> {
     val cartas = mutableListOf<Carta>()
     try {
         val linhas = File(arquivo).readLines(Charsets.ISO_8859_1) // Ajuste para a codificação correta
-        println("Linhas lidas: ${linhas.size}") // Exibe o número de linhas lidas
+        println("Cartas lidas: ${linhas.size}") // Exibe o número de linhas lidas
 
         linhas.forEachIndexed { index, linha ->
             // Ignorar linhas vazias ou inválidas

@@ -3,13 +3,14 @@ import kotlin.random.Random
 class Jogo(private val colecaoDeCartas: List<Carta>) {
     private val jogadores: List<Jogador>
     private var rodada: Int = 0
+    private var jogoFinalizado = false
 
     init {
         jogadores = listOf(Jogador("Jogador 1"), Jogador("Jogador 2"))
         distribuirCartasIniciais()
     }
 
-    private fun distribuirCartasIniciais() {
+    protected fun distribuirCartasIniciais() {
         jogadores.forEach { jogador ->
             repeat(5) {
                 val carta = colecaoDeCartas.random()
@@ -21,21 +22,25 @@ class Jogo(private val colecaoDeCartas: List<Carta>) {
     fun iniciarJogo() {
         rodada = 1
         while (jogadores.any { it.pontosDeVida > 0 } && colecaoDeCartas.isNotEmpty()) {
-            println("Rodada $rodada")
+            println("\n------------------------------------------------------")
+            println("\nRodada $rodada:")
             iniciarRodada()
             rodada++
         }
         verificarVencedor()
     }
 
-    private fun iniciarRodada() {
+    protected fun iniciarRodada() {
         jogadores.forEach { jogador ->
             if (jogador.mao.size < 10 && colecaoDeCartas.isNotEmpty()) {
                 val novaCarta = colecaoDeCartas.random()
                 jogador.receberCarta(novaCarta)
             }
 
-            println("Ações do ${jogador.nome}:")
+
+            println("\n------------------------------------------------------")
+            println("Bem-vindo(a) aventureiro(a) ao jogo de Cartas Monstro!!!")
+            println("Escolhas do ${jogador.nome}:")
             jogador.escolherAcao(this)
         }
     }
@@ -50,7 +55,7 @@ class Jogo(private val colecaoDeCartas: List<Carta>) {
         }
     }
 
-    private fun atacar(jogador: Jogador, atacante: CartaMonstro, alvo: CartaMonstro) {
+    protected fun atacar(jogador: Jogador, atacante: CartaMonstro, alvo: CartaMonstro) {
         if (atacante.estado != MonstroState.ATAQUE) {
             println("Somente monstros em estado de ataque podem atacar.")
             return
@@ -79,15 +84,30 @@ class Jogo(private val colecaoDeCartas: List<Carta>) {
         }
     }
 
-    private fun verificarVencedor() {
+    protected fun verificarVencedor() {
         val jogadorVivo = jogadores.filter { it.pontosDeVida > 0 }
         when {
-            jogadorVivo.size == 1 -> println("${jogadorVivo[0].nome} venceu o jogo!")
-            jogadorVivo.isEmpty() -> println("Empate! Ambos os jogadores perderam todos os pontos de vida.")
+            jogadorVivo.size == 1 -> {
+                println("${jogadorVivo[0].nome} venceu o jogo!")
+                jogoFinalizado = true
+            }
+
+            jogadorVivo.isEmpty() -> {
+                println("Empate! Ambos os jogadores perderam todos os pontos de vida.")
+                jogoFinalizado = true
+            }
+
             else -> {
                 val vencedor = jogadores.maxByOrNull { it.pontosDeVida }
                 println("${vencedor?.nome} venceu o jogo com ${vencedor?.pontosDeVida} pontos de vida!")
+                jogoFinalizado = true
             }
         }
+    }
+
+    // Função para finalizar o jogo
+    public fun finalizarJogo() {
+        println("Jogo finalizado.")
+        jogoFinalizado = true
     }
 }

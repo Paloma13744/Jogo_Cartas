@@ -1,19 +1,30 @@
 class Jogador(val nome: String) {
     val mao = mutableListOf<Carta>()
-    var pontosDeVida = 1000
+    var pontosDeVida = 10000 // Pontos iniciais
     val tabuleiro = mutableListOf<CartaMonstro>()
+    private var tituloExibido = false
 
-    fun receberCarta(carta: Carta) {
+
+    fun receberCarta(carta: Carta) { // Função para receber cartas
+        if (!tituloExibido) {
+            println("\n \uD83D\uDC7B Jogo de Cartas Monstro \uD83D\uDC09")
+            tituloExibido = true
+        }
         mao.add(carta)
-        println("$nome recebeu a carta: ${carta.nome}")
+        val tipo = when (carta) { // Verifica o tipo de carta e mostra ao joagdor o tipo de carta recebida
+            is CartaEquipamento -> "Equipamento"
+            is CartaMonstro -> "Monstro"
+            else -> "Desconhecido"
+        }
+        println("$nome recebeu a carta: ${carta.nome} ($tipo)") // Exibindo o tipo da carta
     }
 
-    fun descartarCarta(carta: Carta) {
+    fun descartarCarta(carta: Carta) {  // Opção para o jogador descartar carta
         mao.remove(carta)
         println("$nome descartou a carta: ${carta.nome}")
     }
 
-    fun posicionarMonstro(cartaMonstro: CartaMonstro) {
+    fun posicionarMonstro(cartaMonstro: CartaMonstro) {  // Função para posicionar o monstro no tabuleiro
         if (tabuleiro.size < 5) {
             tabuleiro.add(cartaMonstro)
             mao.remove(cartaMonstro)
@@ -28,34 +39,37 @@ class Jogador(val nome: String) {
         println("$nome equipou ${monstro.nome} com ${equipamento.nome}")
     }
 
-    fun resetarAtaques() {
-        // Resetar os ataques dos monstros
+    fun resetarAtaques() { // Muda o estado do monstro para defesa
         tabuleiro.forEach { it.estado = MonstroState.DEFESA }
     }
 
-    fun escolherAcao(jogo: Jogo) {
-        println("\nEscolha uma ação:")
-        println("1) Posicionar um novo monstro no tabuleiro")
-        println("2) Equipar um monstro com uma carta de equipamento")
-        println("3) Descartar uma carta da mão")
-        println("4) Realizar um ataque contra o oponente")
-        println("5) Alterar o estado de um monstro (ataque/defesa)")
-        println("6) Sair")
+    fun escolherAcao(jogo: Jogo) {  // Menu interativo para os joagdores
+        println("1)\uD83D\uDC09Posicionar um novo monstro no tabuleiro")
+        println("2)⚙\uFE0FEquipar um monstro com uma carta de equipamento")
+        println("3)\uD83D\uDDD1\uFE0FDescartar uma carta da mão")
+        println("4)⚔\uFE0FRealizar um ataque contra o oponente")
+        println("5)\uD83D\uDD04 Alterar o estado de um monstro (ataque/defesa)")
+        println("6)\uD83D\uDC4B Sair")
+        println("$nome, selecione uma opção:")
+
 
         val opcao = readLine()?.toIntOrNull()
 
         when (opcao) {
-            1 -> posicionarMonstroAtravésDeEscolha()
-            2 -> equiparMonstroAtravésDeEscolha()
-            3 -> descartarCartaAtravésDeEscolha()
+            1 -> posicionarMonstro()
+            2 -> equiparMonstro()
+            3 -> descartarCarta()
             4 -> realizarAtaque()
             5 -> alterarEstadoMonstro()
-            6 -> println("Saindo da rodada.")
+            6 -> {
+                println("Saindo do jogo... O jogo terminou!")
+                jogo.finalizarJogo()
+            }
             else -> println("Opção inválida!")
         }
     }
 
-    private fun posicionarMonstroAtravésDeEscolha() {
+    private fun posicionarMonstro(){
         val monstros = mao.filterIsInstance<CartaMonstro>()
         if (monstros.isNotEmpty()) {
             println("Escolha um monstro da sua mão para posicionar:")
@@ -72,7 +86,7 @@ class Jogador(val nome: String) {
         }
     }
 
-    private fun equiparMonstroAtravésDeEscolha() {
+    private fun equiparMonstro(){
         val monstros = tabuleiro.filterIsInstance<CartaMonstro>()
         val equipamentos = mao.filterIsInstance<CartaEquipamento>()
         if (monstros.isNotEmpty() && equipamentos.isNotEmpty()) {
@@ -100,7 +114,7 @@ class Jogador(val nome: String) {
         }
     }
 
-    private fun descartarCartaAtravésDeEscolha() {
+    private fun descartarCarta (){
         if (mao.isNotEmpty()) {
             println("Escolha uma carta para descartar:")
             mao.forEachIndexed { index, carta -> println("${index + 1}) ${carta.nome}") }

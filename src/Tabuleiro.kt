@@ -1,6 +1,7 @@
 class Tabuleiro {
     private val tamMaxTabuleiro = 5 // Limite de monstros no tabuleiro
     val jogadores: List<Jogador> = listOf(Jogador("Jogador 1"), Jogador("Jogador 2"))
+    private val monstrosTabuleiro: MutableList<CartaMonstro> = mutableListOf()
 
     init {
         distribuirCartasIniciais()
@@ -8,7 +9,7 @@ class Tabuleiro {
 
     private fun distribuirCartasIniciais() {
         jogadores.forEach { jogador ->
-            repeat(5) {
+            repeat(5) { // Distribui e dá 5 cartas para cada jogador
                 val carta = gerarCartaAleatoria()
                 jogador.receberCarta(carta)
             }
@@ -32,5 +33,35 @@ class Tabuleiro {
             }
         }
         jogadores.forEach { it.resetarAtaques() }
+        verificarMonstrosNoTabuleiro() // Verifica a quantidade de monstros no tabuleiro após a rodada
+    }
+
+    // Função para adicionar um monstro ao tabuleiro
+    fun posicionarMonstro(jogador: Jogador, monstro: CartaMonstro) {
+        if (monstrosTabuleiro.size < tamMaxTabuleiro) {
+            monstrosTabuleiro.add(monstro)
+            println("${jogador.nome} posicionou o monstro ${monstro.nome} no tabuleiro.")
+        } else {
+            println("Não é possível posicionar mais monstros. O limite do tabuleiro foi atingido.")
+        }
+    }
+
+    // Verifica se o número máximo de monstros no tabuleiro foi atingido
+    private fun verificarMonstrosNoTabuleiro() {
+        if (monstrosTabuleiro.size == tamMaxTabuleiro) {
+            println("O tabuleiro atingiu o limite de monstros!")
+        }
+    }
+
+    // Função para limpar o tabuleiro
+    fun limparTabuleiro() {
+        monstrosTabuleiro.clear()
+        println("O tabuleiro foi limpo.")
+    }
+
+    // Função para finalizar o jogo no tabuleiro, limpando os monstros e recursos
+    fun finalizarJogo() {
+        limparTabuleiro()
+        println("O jogo foi finalizado. O tabuleiro foi limpo.")
     }
 }
