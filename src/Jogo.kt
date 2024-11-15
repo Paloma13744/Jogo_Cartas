@@ -26,13 +26,14 @@ class Jogo(private val colecaoDeCartas: List<Carta>) {
             println("\nRodada $rodada:")
             iniciarRodada()
             rodada++
+            if (jogoFinalizado) return
         }
         verificarVencedor()
     }
 
     protected fun iniciarRodada() {
         jogadores.forEach { jogador ->
-            if (jogoFinalizado) return  // Sai do método se o jogo estiver finalizado
+            if (jogoFinalizado) return
 
             if (jogador.mao.size < 10 && colecaoDeCartas.isNotEmpty()) {
                 val novaCarta = colecaoDeCartas.random()
@@ -47,43 +48,19 @@ class Jogo(private val colecaoDeCartas: List<Carta>) {
     }
 
     fun realizarAcaoJogador(jogador: Jogador, acao: String, carta: Carta? = null, alvo: CartaMonstro? = null) {
-        when (acao) {
-            "posicionar" -> if (carta is CartaMonstro) jogador.posicionarMonstro(carta)
-            "equipar" -> if (carta is CartaEquipamento && alvo != null) jogador.equiparMonstro(alvo, carta)
-            "descartar" -> if (carta != null) jogador.descartarCarta(carta)
-            "atacar" -> if (alvo != null && carta is CartaMonstro) atacar(jogador, carta, alvo)
-            "alterar" -> if (carta is CartaMonstro) carta.alternarEstado()
-        }
-    }
-
-    protected fun atacar(jogador: Jogador, atacante: CartaMonstro, alvo: CartaMonstro) {
-        if (atacante.estado != MonstroState.ATAQUE) {
-            println("Somente monstros em estado de ataque podem atacar.")
+        if (jogoFinalizado) {
+            println("O jogo já foi finalizado, nenhuma ação pode ser realizada.")
             return
         }
-
-        val oponente = jogadores.first { it != jogador }
-
-        if (alvo.estado == MonstroState.ATAQUE) {
-            val dano = atacante.ataque - alvo.ataque
-            if (dano > 0) {
-                oponente.pontosDeVida -= dano
-                println("${jogador.nome} causou $dano pontos de dano a ${oponente.nome}.")
-            } else {
-                jogador.pontosDeVida += dano  // dano é negativo, então subtrai pontos de vida
-                println("${jogador.nome} perdeu ${-dano} pontos de vida.")
-            }
-        } else {
-            if (atacante.ataque > alvo.defesa) {
-                oponente.tabuleiro.remove(alvo)
-                println("${alvo.nome} foi destruído.")
-            } else {
-                val dano = alvo.defesa - atacante.ataque
-                jogador.pontosDeVida -= dano
-                println("${jogador.nome} perdeu $dano pontos de vida.")
-            }
+        when (acao) {
+            "posicionar" -> if (carta is CartaMonstro) jogador.posicionarMonstro()
+            "equipar" -> if (carta is CartaEquipamento && alvo != null) jogador.equiparMonstro()
+            "descartar" -> if (carta != null) jogador.descartarCarta()
+            "atacar" -> if (alvo != null && carta is CartaMonstro) jogador.realizarAtaque()
+            "alterar" -> if (carta is CartaMonstro) jogador.alterarEstadoMonstro()
         }
     }
+
 
     protected fun verificarVencedor() {
         val jogadorVivo = jogadores.filter { it.pontosDeVida > 0 }
