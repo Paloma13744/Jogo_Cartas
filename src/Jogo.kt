@@ -31,6 +31,11 @@ class Jogo(private val colecaoDeCartas: List<Carta>) {
         verificarVencedor()
     }
 
+    // Função para obter o oponente de um jogador
+    fun obterOponente(jogador: Jogador): Jogador? {
+        return if (jogador == jogadores[0]) jogadores[1] else jogadores[0]
+    }
+
     protected fun iniciarRodada() {
         jogadores.forEach { jogador ->
             if (jogoFinalizado) return
@@ -56,7 +61,12 @@ class Jogo(private val colecaoDeCartas: List<Carta>) {
             "posicionar" -> if (carta is CartaMonstro) jogador.posicionarMonstro()
             "equipar" -> if (carta is CartaEquipamento && alvo != null) jogador.equiparMonstro()
             "descartar" -> if (carta != null) jogador.descartarCarta()
-            "atacar" -> if (alvo != null && carta is CartaMonstro) jogador.realizarAtaque()
+            "atacar" -> if (alvo != null && carta is CartaMonstro) {
+                val oponente = obterOponente(jogador)  // Usando a função para obter oponente
+                oponente?.let {
+                    jogador.realizarAtaque(it)  // Ataque no oponente
+                }
+            }
             "alterar" -> if (carta is CartaMonstro) jogador.alterarEstadoMonstro()
         }
     }
