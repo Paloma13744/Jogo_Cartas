@@ -20,14 +20,14 @@ fun main() {
 fun carregarCartasArquivo(arquivo: String): MutableList<Carta> {
     val cartas = mutableListOf<Carta>()
     try {
-        val linhas = File(arquivo).readLines(Charsets.ISO_8859_1) // Ajuste para a codificação correta
+        val linhas = File(arquivo).readLines(Charsets.ISO_8859_1)
         println("Cartas lidas: ${linhas.size}") // Exibe o número de linhas lidas
 
         linhas.forEachIndexed { index, linha ->
             // Ignorar linhas vazias ou inválidas
             if (linha.trim().isEmpty()) return@forEachIndexed
 
-            val dados = linha.split(";") // Corrigido para usar ponto e vírgula
+            val dados = linha.split(";")
             if (dados.size < 5) {
                 println("Linha inválida no arquivo (linha ${index + 1}): $linha")
                 return@forEachIndexed

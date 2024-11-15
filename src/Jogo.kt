@@ -32,11 +32,12 @@ class Jogo(private val colecaoDeCartas: List<Carta>) {
 
     protected fun iniciarRodada() {
         jogadores.forEach { jogador ->
+            if (jogoFinalizado) return  // Sai do método se o jogo estiver finalizado
+
             if (jogador.mao.size < 10 && colecaoDeCartas.isNotEmpty()) {
                 val novaCarta = colecaoDeCartas.random()
                 jogador.receberCarta(novaCarta)
             }
-
 
             println("\n------------------------------------------------------")
             println("Bem-vindo(a) aventureiro(a) ao jogo de Cartas Monstro!!!")

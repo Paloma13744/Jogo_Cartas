@@ -69,11 +69,14 @@ class Jogador(val nome: String) {
         }
     }
 
-    private fun posicionarMonstro(){
+    private fun posicionarMonstro() {
         val monstros = mao.filterIsInstance<CartaMonstro>()
         if (monstros.isNotEmpty()) {
             println("Escolha um monstro da sua mão para posicionar:")
-            monstros.forEachIndexed { index, carta -> println("${index + 1}) ${carta.nome}") }
+            monstros.forEachIndexed { index, carta ->
+                // Exibindo o nome do monstro, ataque e defesa
+                println("${index + 1}) ${carta.nome} (Ataque: ${carta.ataque}, Defesa: ${carta.defesa})")
+            }
             val escolha = readLine()?.toIntOrNull()
             val monstroEscolhido = monstros.getOrNull(escolha?.minus(1) ?: -1)
             if (monstroEscolhido != null) {
