@@ -33,25 +33,44 @@ class Jogo(private val colecaoDeCartas: List<Carta>) {
     }
 
     protected fun iniciarRodada() {  // Função responsável por gerenciar o início de cada rodada.
+        // Reseta o uso de equipamentos de cada jogador
         jogadores.forEach { it.equipamentoUsado = false }
+
+        // Reseta a variável podePosicionarMonstro para todos os jogadores no início de cada rodada
+        jogadores.forEach { it.podePosicionarMonstro = true }
+
+        // Verifica se a coleção de cartas ainda tem cartas para distribuir e se a mão do jogador tem menos de 10 cartas
         jogadores.forEach { jogador ->
             if (jogoFinalizado) return
 
             if (jogador.mao.size < 10 && colecaoDeCartas.isNotEmpty()) {
+                // Distribui uma nova carta aleatória da coleção para o jogador
                 val novaCarta = colecaoDeCartas.random()
                 jogador.receberCarta(novaCarta)
             }
+        }
 
-            println("\n------------------------------------------------------")
-            if(rodada ==1) {
-                println("Bem-vindo(a) aventureiro(a) ao jogo de Cartas Monstro!!!")
-            }
-            println("Escolhas do ${jogador.nome}:")
+        // Exibe uma mensagem de boas-vindas na primeira rodada
+        println("\n------------------------------------------------------")
+        if (rodada == 1) {
+            println("Bem-vindo(a) aventureiro(a) ao jogo de Cartas Monstro!!!")
+        }
+        println("Iniciando a Rodada $rodada:")
+
+        // Cada jogador escolhe a sua ação para a rodada
+        jogadores.forEach { jogador ->
+            if (jogoFinalizado) return
+
+            println("\nEscolhas do ${jogador.nome}:")
             jogador.escolherAcao(this) // Chama a função onde o jogador escolhe sua ação.
+        }
 
-
+        // Se algum jogador perder, o jogo finaliza
+        if (jogadores.any { it.pontosDeVida <= 0 }) {
+            verificarVencedor()  // Verifica se algum jogador venceu ou o jogo terminou.
         }
     }
+
 
     fun realizarAcaoJogador(jogador: Jogador, acao: String, carta: Carta? = null, alvo: CartaMonstro? = null) {
         if (jogoFinalizado) {
