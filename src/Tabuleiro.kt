@@ -4,12 +4,12 @@ class Tabuleiro {
     private val monstrosTabuleiro: MutableList<CartaMonstro> = mutableListOf()
 
     init {
-        distribuirCartasIniciais()
+        distribuirCartasIniciais()  // Distribui as cartas
     }
 
     private fun distribuirCartasIniciais() {
         jogadores.forEach { jogador ->
-            repeat(5) { // Distribui e dá 5 cartas para cada jogador
+            repeat(5) { // Distribui e dá 5 cartas aleatórias para cada jogador
                 val carta = gerarCartaAleatoria()
                 jogador.receberCarta(carta)
             }
@@ -32,22 +32,17 @@ class Tabuleiro {
                 jogador.receberCarta(carta)
             }
         }
-        jogadores.forEach { it.resetarAtaques() }
-        verificarMonstrosNoTabuleiro() // Verifica a quantidade de monstros no tabuleiro após a rodada
-    }
-
-    // Função para adicionar um monstro ao tabuleiro
-    fun posicionarMonstro(jogador: Jogador, monstro: CartaMonstro) {
-        if (monstrosTabuleiro.size < tamMaxTabuleiro) {
-            monstrosTabuleiro.add(monstro)
-            println("${jogador.nome} posicionou o monstro ${monstro.nome} no tabuleiro.")
-        } else {
-            println("Não é possível posicionar mais monstros. O limite do tabuleiro foi atingido.")
+        jogadores.forEach { jogador ->
+            jogador.tabuleiro.filterIsInstance<CartaMonstro>().forEach {
+                it.jaAtacou = false
+            }
         }
+        verificarMonstrosNoTabuleiro() // Verifica a quantidade de monstros no tabuleiro após a rodada
+
     }
 
     // Verifica se o número máximo de monstros no tabuleiro foi atingido
-    private fun verificarMonstrosNoTabuleiro() {
+    fun verificarMonstrosNoTabuleiro() {
         if (monstrosTabuleiro.size == tamMaxTabuleiro) {
             println("O tabuleiro atingiu o limite de monstros!")
         }
@@ -59,9 +54,11 @@ class Tabuleiro {
         println("O tabuleiro foi limpo.")
     }
 
-    // Função para finalizar o jogo no tabuleiro, limpando os monstros e recursos
+    // Função para finalizar o jogo no tabuleiro
     fun finalizarJogo() {
         limparTabuleiro()
         println("O jogo foi finalizado. O tabuleiro foi limpo.")
     }
+
+
 }

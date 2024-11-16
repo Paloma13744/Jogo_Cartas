@@ -3,7 +3,7 @@ import java.io.FileNotFoundException
 import java.io.IOException
 
 fun main() {
-    val caminhoArquivo = "C:/Users/palom/IdeaProjects/Jogo_Cartas/cartas.csv" // Caminho absoluto do arquivo
+    val caminhoArquivo = "C:/Users/palom/IdeaProjects/Jogo_Cartas/cartas.csv" // Caminho do arquivo (Obs para professor: Para rodar o jogo troque pelo caminho onde está o arquivo cartas.csv em seu computador)
     val baralho = carregarCartasArquivo(caminhoArquivo)
 
     if (baralho.size < 10) {
@@ -12,7 +12,7 @@ fun main() {
     }
     val jogo = Jogo(baralho)
 
-    // Iniciando o jogo
+    // Inicia o jogo
     jogo.iniciarJogo()
 
 }
@@ -45,7 +45,7 @@ fun carregarCartasArquivo(arquivo: String): MutableList<Carta> {
             }
             val tipo = dados[4].trim().lowercase()
 
-            val carta = when (tipo) {
+            val carta = when (tipo) {  // Cria carta de acordo com o tipo (Monstro ou equipamento)
                 "equipamento" -> CartaEquipamento(nome, descricao, ataque, defesa)
                 "monstro" -> CartaMonstro(nome, descricao, ataque, defesa)
                 else -> {
@@ -53,7 +53,7 @@ fun carregarCartasArquivo(arquivo: String): MutableList<Carta> {
                     null
                 }
             }
-            carta?.let { cartas.add(it) }
+            carta?.let { cartas.add(it) } // Se a carta é válida , então é adicionada à lista de cartas.
         }
     } catch (e: FileNotFoundException) {
         println("Arquivo não encontrado: ${e.message}")
@@ -62,5 +62,5 @@ fun carregarCartasArquivo(arquivo: String): MutableList<Carta> {
     } catch (e: Exception) {
         println("Erro inesperado ao processar o arquivo: ${e.message}")
     }
-    return cartas
+    return cartas  // Retorna a minha lista de cartas
 }
