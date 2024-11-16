@@ -43,7 +43,9 @@ class Jogo(private val colecaoDeCartas: List<Carta>) {
             }
 
             println("\n------------------------------------------------------")
-            println("Bem-vindo(a) aventureiro(a) ao jogo de Cartas Monstro!!!")
+            if(rodada ==1) {
+                println("Bem-vindo(a) aventureiro(a) ao jogo de Cartas Monstro!!!")
+            }
             println("Escolhas do ${jogador.nome}:")
             jogador.escolherAcao(this) // Chama a função onde o jogador escolhe sua ação.
 

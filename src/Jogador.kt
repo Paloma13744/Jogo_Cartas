@@ -17,11 +17,18 @@ class Jogador(val nome: String) {
         }
         mao.add(carta)// Adiciona a carta à mão do jogador
         val tipo = when (carta) { // Verifica o tipo de carta e mostra ao jogador o tipo de carta recebida
-            is CartaEquipamento -> "Equipamento"
-            is CartaMonstro -> "Monstro"
+            is CartaEquipamento -> {
+                println("$nome recebeu a carta: ${carta.nome} : ${carta.obterTipo()} (Ataque: ${carta.bonusAtaque}, Defesa: ${carta.bonusDefesa}")
+                "Equipamento"
+            }
+            is CartaMonstro -> {
+                println("$nome recebeu a carta: ${carta.nome} : ${carta.obterTipo()} (Ataque: ${carta.ataque}, Defesa: ${carta.defesa})")
+                "Monstro"
+            }
             else -> "Desconhecido"
         }
-        println("$nome recebeu a carta: ${carta.nome} : ${carta.obterTipo()} (Ataque: ${carta.ataque}, Defesa: ${carta.defesa})") // Exibindo o tipo da carta
+
+
     }
 
 
@@ -48,6 +55,7 @@ class Jogador(val nome: String) {
                     else -> {
                         println("Opção inválida, o monstro será colocado em estado de defesa por padrão.")
                         monstroEscolhido.estado = MonstroState.DEFESA
+                        println();
                     }
                 }
 
@@ -189,6 +197,10 @@ class Jogador(val nome: String) {
         }
     }
 
+    fun finalizarVez(){
+        return
+    }
+
     fun alterarEstadoMonstro() { // Função para alterar o estado de um monstro no tabuleiro
         val monstros = tabuleiro.filterIsInstance<CartaMonstro>()
         if (monstros.isNotEmpty()) {
@@ -249,47 +261,51 @@ class Jogador(val nome: String) {
 
 
     fun escolherAcao(jogo: Jogo) {  // Menu interativo para os jogadores
-        println("1)\uD83D\uDC09Posicionar um novo monstro no tabuleiro")
-        println("2)⚙\uFE0FEquipar um monstro com uma carta de equipamento")
-        println("3)\uD83D\uDDD1\uFE0FDescartar uma carta da mão")
-        println("4)⚔\uFE0FRealizar um ataque contra o oponente")
-        println("5)\uD83D\uDD04 Alterar o estado de um monstro (ataque/defesa)")
-        println("6)\uD83D\uDC4B Sair")
-        println("$nome, selecione uma opção:")
+        var continuarJogando = true  // Flag para controlar o loop
 
-        val opcao = readLine()?.toIntOrNull()
-        if (opcao == null || opcao !in 1..6) {
-            println("Opção inválida. Por favor, escolha uma opção de 1 a 6.")
-            return
-        }
+        while (continuarJogando) {
+            println("1)\uD83D\uDC09Posicionar um novo monstro no tabuleiro")
+            println("2)⚙\uFE0FEquipar um monstro com uma carta de equipamento")
+            println("3)\uD83D\uDDD1\uFE0FDescartar uma carta da mão")
+            println("4)⚔\uFE0FRealizar um ataque contra o oponente")
+            println("5)\uD83D\uDD04 Alterar o estado de um monstro (ataque/defesa)")
+            println("6)\uD83D\uDC4B Finalizar vez")
+            println("7)\uD83D\uDC4B Sair")
+            println("$nome, selecione uma opção:")
 
-        when (opcao) {
-            1 -> posicionarMonstro()
-            2 -> equiparMonstro()
-            3 -> descartarCarta()
-            4 -> {
-                val oponente = jogo.obterOponente(this)
-                if (oponente != null) {
-                    realizarAtaque(oponente)
-                } else {
-                    println("Não foi possível encontrar um oponente!")
+            val opcao = readLine()?.toIntOrNull()
+
+            if (opcao == null || opcao !in 1..7) {
+                println("Opção inválida. Por favor, escolha uma opção de 1 a 7.")
+                continue // Pula para a próxima iteração
+            }
+
+            when (opcao) {
+                1 -> posicionarMonstro()
+                2 -> equiparMonstro()
+                3 -> descartarCarta()
+                4 -> {
+                    val oponente = jogo.obterOponente(this)
+                    if (oponente != null) {
+                        realizarAtaque(oponente)
+                    } else {
+                        println("Não foi possível encontrar um oponente!")
+                    }
                 }
-            }
+                5 -> alterarEstadoMonstro()
+                6 -> {
+                    finalizarVez()
+                    continuarJogando = false // Encerra o loop após finalizar a vez
 
-            5 -> alterarEstadoMonstro()
-            6 -> {
-                println("Saindo do jogo... O jogo terminou!")
-                jogo.finalizarJogo()
+                    println("Vez Finalizada")
+                }
+                7 -> {
+                    println("Saindo do jogo... O jogo terminou!")
+                    jogo.finalizarJogo()
+                    continuarJogando = false // Encerra o loop se o jogador escolher sair
+                }
+                else -> println("Opção inválida!")
             }
-            /*
-            Opção 6 - Observação:
-            Além do jogo finalizar se um dos jogadores perder todos os pontos ,o jogo finaliza também
-            com essa opção , caso um dos jogadores não queira mais jogar, encerra o jogo.
-             */
-
-            else -> println("Opção inválida!")
         }
-
-
     }
 }
