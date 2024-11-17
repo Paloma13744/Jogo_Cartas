@@ -4,6 +4,7 @@ class Jogo(private val colecaoDeCartas: List<Carta>) {
     private val jogadores: List<Jogador>
     private var rodada: Int = 0
     private var jogoFinalizado = false
+    private var vencedor = false
 
     init {  // Inicializa o jogo com 2 jogadores e distrbui as cartas
         jogadores = listOf(Jogador("Jogador 1"), Jogador("Jogador 2"))
@@ -15,6 +16,7 @@ class Jogo(private val colecaoDeCartas: List<Carta>) {
             repeat(5) {
                 val carta = colecaoDeCartas.random()
                 jogador.receberCarta(carta)
+
             }
         }
     }
@@ -23,8 +25,6 @@ class Jogo(private val colecaoDeCartas: List<Carta>) {
         jogadores.forEach { it.equipamentoUsado = false }
         rodada = 1
         while (jogadores.any { it.pontosDeVida > 0 } && colecaoDeCartas.isNotEmpty()) {
-            println("\n------------------------------------------------------")
-            println("\nRodada $rodada:")
             iniciarRodada()
             rodada++
             if (jogoFinalizado) return // Se o jogo terminar, sai da função.
@@ -32,73 +32,60 @@ class Jogo(private val colecaoDeCartas: List<Carta>) {
         verificarVencedor()
     }
 
-    protected fun iniciarRodada() {  // Função responsável por gerenciar o início de cada rodada.
-        // Reseta o uso de equipamentos de cada jogador
+    protected fun iniciarRodada() {
+
+        jogadores.forEach { jogador -> jogador.resetarEstadoMonstros()}
+
         jogadores.forEach { it.equipamentoUsado = false }
+
+        jogadores.forEach{ it.isEquipol = false}
+
+        if (rodada == 1) {
+            jogadores.forEach { it.primeiraRodada = true }  // Na primeira rodada, é verdadeiro
+        } else {
+            jogadores.forEach { it.primeiraRodada = false }
+
+        }
 
         // Reseta a variável podePosicionarMonstro para todos os jogadores no início de cada rodada
         jogadores.forEach { it.podePosicionarMonstro = true }
 
-        // Verifica se a coleção de cartas ainda tem cartas para distribuir e se a mão do jogador tem menos de 10 cartas
-        jogadores.forEach { jogador ->
-            if (jogoFinalizado) return
+        // Verifica se o jogo já foi finalizado antes de começar a rodada
+        if (jogoFinalizado) return  // Se o jogo já terminou, sai da função
 
-            if (jogador.mao.size < 10 && colecaoDeCartas.isNotEmpty()) {
+        // Exibe uma mensagem de boas-vindas na primeira rodada
+        println("\n------------------------------------------------------------------------")
+
+        if (rodada == 1) {
+            println("\u001B[31m\u001B[3mBem-vindo(a) aventureiro(a) ao jogo de Cartas Monstro!!!\u001B[0m")
+        }
+        println("Iniciando a Rodada $rodada:")
+        // Cada jogador escolhe a sua ação para a rodada
+        jogadores.forEach { jogador ->
+            // Se o jogador já perdeu, o jogo é finalizado antes de sua vez
+            if (jogador.pontosDeVida <= 0) {
+                println("${jogador.nome} já perdeu todos os pontos de vida! O jogo acabou.")
+                jogoFinalizado = true
+                return
+            }
+            if ( colecaoDeCartas.isNotEmpty()) {
                 // Distribui uma nova carta aleatória da coleção para o jogador
                 val novaCarta = colecaoDeCartas.random()
                 jogador.receberCarta(novaCarta)
             }
-        }
 
-        // Exibe uma mensagem de boas-vindas na primeira rodada
-        println("\n------------------------------------------------------")
-        if (rodada == 1) {
-            println("Bem-vindo(a) aventureiro(a) ao jogo de Cartas Monstro!!!")
-        }
-        println("Iniciando a Rodada $rodada:")
+            if (jogoFinalizado) return // Verifica se o jogo foi finalizado durante a rodada
 
-        // Cada jogador escolhe a sua ação para a rodada
-        jogadores.forEach { jogador ->
-            if (jogoFinalizado) return
-
+            // Chama a função para realizar a ação do jogador
             println("\nEscolhas do ${jogador.nome}:")
-            jogador.escolherAcao(this) // Chama a função onde o jogador escolhe sua ação.
+            jogador.escolherAcao(this) // Aqui, o jogador escolhe a ação, que será processada em realizarAcaoJogador
         }
 
-        // Se algum jogador perder, o jogo finaliza
-        if (jogadores.any { it.pontosDeVida <= 0 }) {
-            verificarVencedor()  // Verifica se algum jogador venceu ou o jogo terminou.
-        }
-    }
+        // Verifica se algum jogador perdeu, e se sim, finaliza o jogo
+        verificarVencedor()  // Verifica se algum jogador venceu ou perdeu após a rodada
 
+  }
 
-    fun realizarAcaoJogador(jogador: Jogador, acao: String, carta: Carta? = null, alvo: CartaMonstro? = null) {
-        if (jogoFinalizado) {
-            println("O jogo já foi finalizado, nenhuma ação pode ser realizada.")
-            return
-        }
-        when (acao) {
-            "posicionar" -> if (carta is CartaMonstro) jogador.posicionarMonstro()
-            "equipar" -> if (carta is CartaEquipamento && alvo != null) {
-                if (jogador.equipamentoUsado) {
-                    println("${jogador.nome} já usou um equipamento nesta rodada!")
-                } else {
-                    jogador.equiparMonstro()
-                    jogador.equipamentoUsado = true // Marca o uso de equipamento
-                }
-            }
-
-            "descartar" -> if (carta != null) jogador.descartarCarta()
-            "atacar" -> if (alvo != null && carta is CartaMonstro) {
-                val oponente = obterOponente(jogador)  // Usando a função para obter oponente
-                oponente?.let {
-                    jogador.realizarAtaque(it)  // Ataque no oponente
-                }
-            }
-
-            "alterar" -> if (carta is CartaMonstro) jogador.alterarEstadoMonstro()
-        }
-    }
 
     // Função para obter o oponente de um jogador
     fun obterOponente(jogador: Jogador): Jogador? {
@@ -106,28 +93,54 @@ class Jogo(private val colecaoDeCartas: List<Carta>) {
     }
 
     fun verificarVencedor() {
-        val jogadorVivo = jogadores.filter { it.pontosDeVida > 0 }
+        val jogadoresComVidaPositiva = jogadores.filter { it.pontosDeVida > 0 }
+        val jogadoresComVidaZeroOuMenor = jogadores.filter { it.pontosDeVida <= 0 }
+
         when {
-            jogadorVivo.size == 1 -> {
-                println("${jogadorVivo[0].nome} venceu o jogo!")
+            // Verifica se há apenas um jogador com vida positiva e o outro com vida menor ou igual a zero
+            jogadoresComVidaPositiva.size == 1 && jogadoresComVidaZeroOuMenor.size == 1 -> {
+                val vencedor = jogadoresComVidaPositiva[0]
+                println("${vencedor.nome} 🏆 venceu o jogo com ${vencedor.pontosDeVida} pontos de vida!")
+                jogoFinalizado = true  // Marca o jogo como finalizado
             }
 
-            jogadorVivo.isEmpty() -> {
+            // Caso ainda não tenha um vencedor claro, mas algum jogador perdeu
+            jogadoresComVidaZeroOuMenor.size > 0 -> {
+                val jogadorPerdedor = jogadoresComVidaZeroOuMenor[0]
+                println("${jogadorPerdedor.nome} perdeu todos os pontos de vida. O jogo acabou!")
+                jogoFinalizado = true  // Marca o jogo como finalizado
+            }
+
+            // Caso ambos os jogadores tenham perdido todos os pontos de vida
+            jogadoresComVidaZeroOuMenor.size == jogadores.size -> {
                 println("Empate! Ambos os jogadores perderam todos os pontos de vida.")
+                jogoFinalizado = true  // Marca o jogo como finalizado
             }
 
             else -> {
-                val vencedor = jogadores.maxByOrNull { it.pontosDeVida }
-                println("${vencedor?.nome} venceu o jogo com ${vencedor?.pontosDeVida} pontos de vida!")
+                println("Não há vencedor claro no momento.")
             }
         }
+    }
+
+
+    // Função para finalizar o jogo quando um jogador pede para sair
+    public fun finalizarJogo(jogadorQueSaiu: Jogador) {
+        if (jogoFinalizado) {
+            println("O jogo já foi finalizado.")
+            return
+        }
+
+        val oponente = obterOponente(jogadorQueSaiu)
+
+        if (oponente != null) {
+            println("${jogadorQueSaiu.nome} pediu para sair do jogo!")
+            println("${oponente.nome} é o vencedor com ${oponente.pontosDeVida} pontos de vida!")
+        } else {
+            println("${jogadorQueSaiu.nome} pediu para sair do jogo, mas nenhum oponente foi encontrado.")
+        }
+
         jogoFinalizado = true // Marca o jogo como finalizado.
-
     }
 
-    // Função para finalizar o jogo
-    public fun finalizarJogo() {
-        println("Jogo finalizado.")
-        jogoFinalizado = true
-    }
 }
