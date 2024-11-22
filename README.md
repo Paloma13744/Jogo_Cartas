@@ -26,8 +26,8 @@ git clone https://github.com/SeuUsuario/JogoDeCartasMonstro.git
 cd JogoDeCartasMonstro
 ```
 
-#### 3. Utilize esse arquivo cvs (Está no projeto):
-
+#### 3. Utilize esse arquivo csv 
+***Obs:Está no projeto**
 ![image](https://github.com/user-attachments/assets/a404f1c6-f2aa-473a-8c2d-715224e39adf)
 
 #### Uso:
