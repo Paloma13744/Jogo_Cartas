@@ -26,7 +26,7 @@ git clone https://github.com/SeuUsuario/JogoDeCartasMonstro.git
 cd JogoDeCartasMonstro
 ```
 
-#### 3. Utilize esse arquivo cvs:
+#### 3. Utilize esse arquivo cvs (Está no projeto):
 
 ![image](https://github.com/user-attachments/assets/a404f1c6-f2aa-473a-8c2d-715224e39adf)
 
@@ -36,7 +36,13 @@ Após iniciar o jogo, você poderá:
 - Receber Cartas: Receba cartas aleatórias no início do jogo e ao longo das rodadas.
 - Realizar Ações: Escolha entre várias ações como posicionar monstros, equipar monstros, realizar ataques, descartar cartas, e alterar estados dos monstros.
 - Batalhar: Engaje em batalhas com oponente até que um dos jogadores perca todos os pontos de vida.
+
+
+#### Autores:
+- [Paloma13744](https://github.com/Paloma13744)
+- [ThSFernandes](https://github.com/ThSFernandes)
   
 #### Tecnologias Utilizadas
-- ![Kotlin Logo](https://upload.wikimedia.org/wikipedia/commons/7/74/Logo_Kotlin_2017.svg) 
+![icons8-kotlin-48](https://github.com/user-attachments/assets/4234bdd1-a4e4-40aa-9adf-67d0a3769a04)
+
 
